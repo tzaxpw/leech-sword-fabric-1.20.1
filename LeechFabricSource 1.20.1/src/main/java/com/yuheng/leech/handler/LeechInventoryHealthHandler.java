@@ -21,7 +21,7 @@ public final class LeechInventoryHealthHandler {
         }
     }
 
-    private static void updatePlayer(ServerPlayerEntity player) {
+    public static void updatePlayer(ServerPlayerEntity player) {
         EntityAttributeInstance maxHealth = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
         if (maxHealth == null) {
             return;

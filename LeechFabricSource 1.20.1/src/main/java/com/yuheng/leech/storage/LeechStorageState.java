@@ -17,6 +17,7 @@ public class LeechStorageState extends PersistentState {
     private static final String SAVE_ID = "leech_storage";
 
     private final Map<UUID, DefaultedList<ItemStack>> inventories = new HashMap<>();
+    private final Map<UUID, Integer> reviveCooldownTicks = new HashMap<>();
 
     public static LeechStorageState get(MinecraftServer server) {
         PersistentStateManager manager = server.getOverworld().getPersistentStateManager();
@@ -47,6 +48,19 @@ public class LeechStorageState extends PersistentState {
             }
         }
 
+        NbtCompound cooldowns = nbt.getCompound("ReviveCooldowns");
+        for (String uuidString : cooldowns.getKeys()) {
+            try {
+                UUID uuid = UUID.fromString(uuidString);
+                int remainingTicks = cooldowns.getInt(uuidString);
+                if (remainingTicks > 0) {
+                    state.reviveCooldownTicks.put(uuid, remainingTicks);
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Ignore malformed UUID keys instead of preventing the world from loading.
+            }
+        }
+
         return state;
     }
 
@@ -74,10 +88,48 @@ public class LeechStorageState extends PersistentState {
         }
 
         nbt.put("Players", players);
+
+        NbtCompound cooldowns = new NbtCompound();
+        for (Map.Entry<UUID, Integer> entry : this.reviveCooldownTicks.entrySet()) {
+            if (entry.getValue() > 0) {
+                cooldowns.putInt(entry.getKey().toString(), entry.getValue());
+            }
+        }
+        nbt.put("ReviveCooldowns", cooldowns);
+
         return nbt;
     }
 
     public DefaultedList<ItemStack> getInventory(UUID playerUuid) {
         return this.inventories.computeIfAbsent(playerUuid, uuid -> DefaultedList.ofSize(STORAGE_SIZE, ItemStack.EMPTY));
+    }
+
+    public int getReviveCooldownTicks(UUID playerUuid) {
+        return this.reviveCooldownTicks.getOrDefault(playerUuid, 0);
+    }
+
+    public void setReviveCooldownTicks(UUID playerUuid, int ticks) {
+        if (ticks > 0) {
+            this.reviveCooldownTicks.put(playerUuid, ticks);
+        } else {
+            this.reviveCooldownTicks.remove(playerUuid);
+        }
+        this.markDirty();
+    }
+
+    public int tickReviveCooldown(UUID playerUuid) {
+        int remainingTicks = this.getReviveCooldownTicks(playerUuid);
+        if (remainingTicks <= 0) {
+            return 0;
+        }
+
+        int updatedTicks = remainingTicks - 1;
+        if (updatedTicks > 0) {
+            this.reviveCooldownTicks.put(playerUuid, updatedTicks);
+        } else {
+            this.reviveCooldownTicks.remove(playerUuid);
+        }
+        this.markDirty();
+        return updatedTicks;
     }
 }

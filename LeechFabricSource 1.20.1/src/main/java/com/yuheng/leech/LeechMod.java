@@ -2,6 +2,7 @@ package com.yuheng.leech;
 
 import com.yuheng.leech.handler.LeechBlockDamageHandler;
 import com.yuheng.leech.handler.LeechInventoryHealthHandler;
+import com.yuheng.leech.handler.LeechReviveHandler;
 import com.yuheng.leech.item.LeechSwordItem;
 import com.yuheng.leech.net.LeechPackets;
 import net.fabricmc.api.ModInitializer;
@@ -32,6 +33,7 @@ public class LeechMod implements ModInitializer {
 
         LeechPackets.registerServer();
         ServerTickEvents.END_SERVER_TICK.register(LeechInventoryHealthHandler::tick);
+        ServerTickEvents.END_SERVER_TICK.register(LeechReviveHandler::tick);
         LeechBlockDamageHandler.register();
 
         System.out.println("Leech Sword Loaded!");
