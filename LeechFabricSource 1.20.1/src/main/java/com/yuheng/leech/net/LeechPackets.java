@@ -16,11 +16,18 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 public final class LeechPackets {
     public static final Identifier AIR_JUMP = LeechMod.id("air_jump");
     public static final Identifier SUMMON_SWORD = LeechMod.id("summon_sword");
     public static final Identifier CLEAR_LEVITATION = LeechMod.id("clear_levitation");
     public static final Identifier OPEN_STORAGE = LeechMod.id("open_storage");
+
+    private static final int AIR_JUMP_COOLDOWN_TICKS = 3;
+    // Accessed only on the server thread. Weak keys do not retain old player sessions.
+    private static final Map<ServerPlayerEntity, Integer> AIR_JUMP_NEXT_ALLOWED_TICKS = new WeakHashMap<>();
 
     private LeechPackets() {
     }
@@ -50,7 +57,10 @@ public final class LeechPackets {
         if (player.isOnGround()) {
             return;
         }
-        if (player.getItemCooldownManager().isCoolingDown(LeechMod.LEECH_SWORD)) {
+        int currentTick = player.age;
+        Integer nextAllowedTick = AIR_JUMP_NEXT_ALLOWED_TICKS.get(player);
+        // Subtraction also preserves the short interval if the tick counter wraps.
+        if (nextAllowedTick != null && currentTick - nextAllowedTick < 0) {
             return;
         }
 
@@ -59,7 +69,7 @@ public final class LeechPackets {
         player.fallDistance = 0.0F;
         player.velocityModified = true;
         player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-        player.getItemCooldownManager().set(LeechMod.LEECH_SWORD, 3);
+        AIR_JUMP_NEXT_ALLOWED_TICKS.put(player, currentTick + AIR_JUMP_COOLDOWN_TICKS);
     }
 
     private static void handleSummonSword(ServerPlayerEntity player) {

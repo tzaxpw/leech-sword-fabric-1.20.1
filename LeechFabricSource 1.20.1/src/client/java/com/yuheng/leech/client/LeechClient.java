@@ -77,7 +77,7 @@ public class LeechClient implements ClientModInitializer {
         }
 
         // Reuse vanilla jump key for the air-jump mechanism.
-        // Server-side item cooldown keeps it from firing every tick too fast.
+        // Server-side per-player cooldown keeps it from firing every tick too fast.
         if (client.options.jumpKey.isPressed()
                 && !client.player.isOnGround()
                 && LeechSwordItem.isLeechSwordMainHand(client.player)) {

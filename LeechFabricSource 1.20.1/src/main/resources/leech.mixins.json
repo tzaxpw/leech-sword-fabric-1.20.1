@@ -7,6 +7,9 @@
     "LivingEntityBlockingMixin",
     "LivingEntityReviveMixin"
   ],
+  "client": [
+    "ClientPlayerEntityMovementMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
