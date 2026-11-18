@@ -30,12 +30,12 @@ public final class LeechBlockDamageHandler {
 
             try {
                 reentryBypass = true;
-                entity.damage(source, amount * 0.5F);
+                entity.damage(source, amount * 0.35F);
             } finally {
                 reentryBypass = false;
             }
 
-            // Cancel the original full damage. The half-damage call above replaces it.
+            // Cancel the original hit; the call above reapplies 35% of its damage.
             return false;
         });
     }

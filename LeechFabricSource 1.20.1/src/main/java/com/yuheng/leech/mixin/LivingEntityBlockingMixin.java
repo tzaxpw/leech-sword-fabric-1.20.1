@@ -19,7 +19,7 @@ public abstract class LivingEntityBlockingMixin {
                 && LeechSwordItem.isLeechSwordActiveItem(player)) {
             // Keep UseAction.BLOCK for the correct arm pose, but do not let vanilla
             // shield logic fully cancel frontal damage. LeechBlockDamageHandler
-            // remains responsible for the intended 50% damage reduction.
+            // handles the custom damage reduction.
             cir.setReturnValue(false);
         }
     }
