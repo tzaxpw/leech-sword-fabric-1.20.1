@@ -6,9 +6,9 @@ import com.yuheng.leech.storage.LeechPersistentInventory;
 import com.yuheng.leech.storage.LeechStorageState;
 import com.yuheng.leech.util.LeechUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,6 +21,7 @@ import java.util.WeakHashMap;
 
 public final class LeechPackets {
     public static final Identifier AIR_JUMP = LeechMod.id("air_jump");
+    public static final Identifier AIR_JUMP_APPLIED = LeechMod.id("air_jump_applied");
     public static final Identifier SUMMON_SWORD = LeechMod.id("summon_sword");
     public static final Identifier CLEAR_LEVITATION = LeechMod.id("clear_levitation");
     public static final Identifier OPEN_STORAGE = LeechMod.id("open_storage");
@@ -67,8 +68,9 @@ public final class LeechPackets {
         Vec3d velocity = player.getVelocity();
         player.setVelocity(velocity.x, 0.42D, velocity.z);
         player.fallDistance = 0.0F;
-        player.velocityModified = true;
-        player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+        // Confirm only the vertical jump. A full velocity packet would replace
+        // the client's horizontal movement with the server's stale X/Z values.
+        ServerPlayNetworking.send(player, AIR_JUMP_APPLIED, PacketByteBufs.empty());
         AIR_JUMP_NEXT_ALLOWED_TICKS.put(player, currentTick + AIR_JUMP_COOLDOWN_TICKS);
     }
 

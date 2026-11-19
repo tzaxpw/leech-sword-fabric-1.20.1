@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredica
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
 public class LeechClient implements ClientModInitializer {
@@ -54,6 +55,18 @@ public class LeechClient implements ClientModInitializer {
                                 && stack.getItem() instanceof LeechSwordItem
                                 ? 1.0F
                                 : 0.0F
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(LeechPackets.AIR_JUMP_APPLIED,
+                (client, handler, buf, responseSender) -> client.execute(() -> {
+                    if (client.player == null) {
+                        return;
+                    }
+
+                    Vec3d velocity = client.player.getVelocity();
+                    client.player.setVelocity(velocity.x, 0.42D, velocity.z);
+                    client.player.fallDistance = 0.0F;
+                })
         );
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
