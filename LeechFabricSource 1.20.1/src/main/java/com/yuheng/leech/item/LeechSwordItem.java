@@ -115,6 +115,7 @@ public class LeechSwordItem extends PickaxeItem {
             user.removeStatusEffect(StatusEffects.SLOW_FALLING);
             user.removeStatusEffect(StatusEffects.MINING_FATIGUE);
             user.removeStatusEffect(StatusEffects.UNLUCK);
+            user.removeStatusEffect(StatusEffects.WEAKNESS);
         }
 
         return TypedActionResult.consume(stack);
